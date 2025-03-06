@@ -1,0 +1,45 @@
+/* Custom overrides for FullCalendar to match blue/white/green accents */
+.fc {
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.fc-header-toolbar {
+    background-color: #007bff;
+    color: #ffffff;
+    padding: 0.5rem;
+    border-radius: 8px 8px 0 0;
+}
+
+.fc-daygrid-day-number {
+    color: #007bff;
+}
+
+.fc-event {
+    background-color: #28a745;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    margin: 2px;
+}
+
+.fc-event:hover {
+    background-color: #218838;
+    transition: background-color 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fc-event:hover {
+        transition: none;
+    }
+}
+
+/* Ensure WCAG 2.1 AA contrast for accessibility */
+.fc-daygrid-day-number, .fc-event {
+    text-shadow: none;
+    font-weight: bold;
+}

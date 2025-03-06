@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="description" content="View your health analytics on MediNet">
+    <title>MediNet - Analytics</title>
+    <!-- CSS and accessibility for blue/white/green/gray theme, medical cross (✚) -->
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/fullcalendar.min.css">
+    <!-- JavaScript for real-time updates and analytics -->
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sanitize-html/2.7.0/sanitize-html.min.js" defer></script>
+</head>
+<body>
+    <!-- Medical cross (✚) symbol as fixed navigation marker -->
+    <div id="mediNet-symbol">MediNet</div>
+    <nav class="navbar navbar-dark bg-dark" role="navigation" aria-label="Main navigation">
+        <a class="navbar-brand" href="/">MediNet</a>
+    </nav>
+    <main class="container mt-4" role="main" aria-label="Health Analytics Main Content">
+        <h2 class="text-center text-primary">Analytics</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <section id="analyticsContent" role="region" aria-live="polite" aria-label="Health Analytics Content">
+                    <!-- Dynamic content inserted via JavaScript -->
+                </section>
+            </div>
+        </div>
+        <!-- Role-specific, user-friendly alerts -->
+        {% if error and error != None and error|length > 0 %}
+            <div class="alert alert-danger mt-3 text-center" role="alert" aria-live="polite">{{ error }}</div>
+        {% elif success_message and success_message != None and success_message|length > 0 %}
+            <div class="alert alert-success mt-3 text-center" role="alert" aria-live="polite">{{ success_message }}</div>
+        {% endif %}
+    </main>
+    <script type="module">
+        /**
+         * Initialize the analytics page with role-specific messages and real-time updates.
+         * @param {string} token - JWT token for authentication
+         * @param {number} userId - User ID
+         * @param {string} role - User role (admin, doctor, patient)
+         * @param {string} socketUrl - SocketIO URL
+         */
+        import { initializeAnalyticsPage } from '/static/analytics.js';
+        const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('user_id');
+        const role = localStorage.getItem('role');
+
+        if (!token || !userId) {
+            window.location.href = '/login';
+        } else {
+            initializeAnalyticsPage(token, userId, role, 'http://localhost:5005');
+        }
+    </script>
+    <!-- Ensure accessibility for reduced motion -->
+    <style>
+        @media (prefers-reduced-motion: reduce) {
+            *, .card:hover {
+                transition: none;
+                transform: none;
+            }
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,36 @@
+# Hyperledger Fabric core configuration
+peer:
+  id: peer0.org1.example.com
+  networkId: medinet
+  gossip:
+    useLeaderElection: true
+    orgLeader: false
+  mspConfigPath: /etc/hyperledger/msp
+  tls:
+    enabled: true
+    cert:
+      file: /etc/hyperledger/tls/server.crt
+    key:
+      file: /etc/hyperledger/tls/server.key
+    rootcert:
+      file: /etc/hyperledger/tls/ca.crt
+    clientAuthRequired: false
+  chaincode:
+    mode: net
+    address: 0.0.0.0:7052
+    loglevel: info
+    builder: /bin/gobuild
+    gopath: /opt/gopath
+  metrics:
+    provider: prometheus
+    address: 0.0.0.0:8443
+
+logging:
+  level: info
+  format: '%{color}%{time:2006-01-02 15:04:05.000 MST} [%{module}] %{shortfunc} -> %{level:.4s} %{id:03x} %{message}%{color:reset}'
+
+vm:
+  docker:
+    hostConfig:
+      Memory: 2147483648  # 2GB memory limit
+      MemorySwap: 4294967296  # 4GB memory swap limit

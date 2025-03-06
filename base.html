@@ -1,0 +1,47 @@
+<!-- Base template for MediNet frontend, shared across all pages -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="description" content="MediNet for Healthcare Management">
+    <title>MediNet - {% block title %}Dashboard{% endblock %}</title>
+    <!-- Common CSS files for styling the MediNet dashboard -->
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/fullcalendar.min.css">
+    <!-- Block for page-specific scripts, like A-Frame for AR scenes -->
+    {% block extra_scripts %}{% endblock %}
+</head>
+<body>
+    <!-- Medical cross symbol as a fixed navigation marker -->
+    <div id="mediNet-symbol">MediNet</div>
+    <nav class="navbar navbar-dark bg-dark" role="navigation" aria-label="Main navigation">
+        <a class="navbar-brand" href="/">MediNet</a>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link text-white" href="/logout">Logout</a>
+            </li>
+        </ul>
+    </nav>
+    <main class="container mt-4" role="main" aria-label="Dashboard Main Content">
+        <!-- Block for page-specific content -->
+        {% block content %}{% endblock %}
+    </main>
+    <!-- Common JavaScript libraries for real-time updates and security -->
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sanitize-html/2.7.0/sanitize-html.min.js" defer></script>
+    <!-- Block for page-specific JavaScript logic -->
+    {% block page_scripts %}{% endblock %}
+    <!-- CSS for accessibility, reducing motion for users who prefer it -->
+    <style>
+        @media (prefers-reduced-motion: reduce) {
+            *, .card:hover {
+                transition: none;
+                transform: none;
+            }
+        }
+    </style>
+</body>
+</html>

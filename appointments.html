@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="description" content="MediNet Appointments for Healthcare Management">
+    <title>MediNet - Appointments</title>
+    <!-- External CSS (add via tool settings or inline) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css" rel="stylesheet">
+    <style>
+        #mediNet-symbol {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            color: #007bff;
+            font-weight: bold;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, .card:hover {
+                transition: none;
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Medical cross symbol as fixed navigation marker -->
+    <div id="mediNet-symbol">MediNet</div>
+    <nav class="navbar navbar-dark bg-dark" role="navigation" aria-label="Main navigation">
+        <a class="navbar-brand" href="/">MediNet</a>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link text-white" href="/logout">Logout</a>
+            </li>
+        </ul>
+    </nav>
+    <main class="container mt-4" role="main" aria-label="Appointments Main Content">
+        <h2 class="text-center text-primary">Appointments</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div id="appointmentsList" role="region" aria-label="Appointments List">
+                    <!-- Simulated dynamic content -->
+                    <p>Loading appointments...</p>
+                </div>
+            </div>
+        </div>
+        <!-- Static alerts, updated via JavaScript -->
+        <div class="alert alert-danger mt-3 text-center" role="alert" aria-live="polite" id="errorAlert" style="display: none;"></div>
+        <div class="alert alert-success mt-3 text-center" role="alert" aria-live="polite" id="successAlert" style="display: none;"></div>
+    </main>
+    <!-- JavaScript for appointments functionality -->
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sanitize-html/2.7.0/sanitize-html.min.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const socket = io('http://localhost:5005');
+
+            socket.on('connect', () => console.log('Connected to SocketIO'));
+            socket.on('message', (data) => console.log(data));
+
+            // Simulated appointments data fetch (replace with real API call)
+            fetch('/api/appointments/patient/123', { // Mock userId
+                headers: { 'Authorization': `Bearer fakeToken` }
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    const appointmentsList = document.getElementById('appointmentsList');
+                    appointmentsList.innerHTML = data.appointments.map(appointment => `
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">${appointment.patient_name} - ${appointment.doctor_name}</h5>
+                                <p>Date: ${new Date(appointment.date).toLocaleString()}</p>
+                                <p>Status: ${appointment.status} ${appointment.verified ? '(Verified: ✔)' : ''}</p>
+                                <p>Comment: ${appointment.comment || 'N/A'}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                    document.getElementById('successAlert').textContent = 'Appointments loaded successfully!';
+                    document.getElementById('successAlert').style.display = 'block';
+                    setTimeout(() => document.getElementById('successAlert').style.display = 'none', 5000);
+                })
+                .catch(error => {
+                    console.error('Appointments fetch error:', error);
+                    document.getElementById('errorAlert').textContent = `Failed to load appointments: ${error.message || 'Unknown error'}`;
+                    document.getElementById('errorAlert').style.display = 'block';
+                });
+
+            // Mock Socket.IO data if no server is available
+            setTimeout(() => {
+                socket.emit('message', { message: 'Appointments updated!' });
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

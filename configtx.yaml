@@ -1,0 +1,35 @@
+# Hyperledger Fabric channel configuration
+Organizations:
+  - &Org1
+    Name: Org1MSP
+    ID: Org1MSP
+    MSPDir: crypto-config/peerOrganizations/org1.example.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('Org1MSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('Org1MSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('Org1MSP.admin')"
+    AnchorPeers:
+      - Host: peer0.org1.example.com
+        Port: 7051
+
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+
+Profiles:
+  MediNetChannel:
+    Capabilities:
+      <<: *ChannelCapabilities
+    Orderer:
+      <<: *OrdererOrg
+    Application:
+      <<: *ApplicationOrg
+      Organizations:
+        - *Org1
+    Consortium: MediNetConsortium

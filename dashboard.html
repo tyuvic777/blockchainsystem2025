@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="description" content="MediNet Dashboard for Healthcare Management">
+    <title>MediNet - Dashboard</title>
+    <!-- External CSS (add via tool settings or inline) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/main.min.css" rel="stylesheet">
+    <style>
+        #mediNet-symbol {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            font-size: 24px;
+            color: #007bff;
+            font-weight: bold;
+        }
+        #arScene {
+            height: 400px;
+            border: 1px solid #007bff;
+            border-radius: 8px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, .card:hover {
+                transition: none;
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Medical cross symbol as fixed navigation marker -->
+    <div id="mediNet-symbol">MediNet</div>
+    <nav class="navbar navbar-dark bg-dark" role="navigation" aria-label="Main navigation">
+        <a class="navbar-brand" href="/">MediNet</a>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link text-white" href="/logout">Logout</a>
+            </li>
+        </ul>
+    </nav>
+    <main class="container mt-4" role="main" aria-label="Dashboard Main Content">
+        <h2 class="text-center text-primary">Dashboard</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <!-- Multi-modal input for search/voice -->
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search or speak..." aria-label="Search or speak">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="button" id="voiceButton" aria-label="Voice Input">
+                            <span role="img" aria-label="Microphone">🎤</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- AR Scene for telemedicine visualization using A-Frame -->
+                <div id="arScene" class="mb-3">
+                    <a-scene embedded>
+                        <a-box position="0 1.6 -2" rotation="0 45 0" color="#007bff" scale="1 1 1"></a-box>
+                        <a-cylinder position="0 0.75 -3" radius="0.5" height="1.5" color="#28a745"></a-cylinder>
+                        <a-plane position="0 0 -4" rotation="-90 0 0" width="4" height="4" color="#ffffff" opacity="0.5"></a-plane>
+                    </a-scene>
+                    <p id="webglFallback" class="text-muted text-center" style="display: none;">AR not supported. Please use a compatible browser.</p>
+                </div>
+                <!-- FullCalendar for appointments (simulated, requires FullCalendar JS) -->
+                <div id="calendar" role="region" aria-label="Appointments Calendar"></div>
+                <!-- Dashboard content area, updated dynamically via JavaScript -->
+                <section id="dashboardContent" role="region" aria-live="polite" aria-label="Dashboard Information">
+                    <p>Records: Loading...</p>
+                    <p>Appointments: Loading...</p>
+                </section>
+            </div>
+        </div>
+        <!-- Static alerts, updated via JavaScript -->
+        <div class="alert alert-danger mt-3 text-center" role="alert" aria-live="polite" id="errorAlert" style="display: none;"></div>
+        <div class="alert alert-success mt-3 text-center" role="alert" aria-live="polite" id="successAlert" style="display: none;"></div>
+    </main>
+</body>
+<!-- JavaScript for dashboard functionality -->
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js" defer></script>
+<script src="https://cdn.socket.io/4.0.0/socket.io.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sanitize-html/2.7.0/sanitize-html.min.js" defer></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const socket = io('http://localhost:5005');
+
+        socket.on('connect', () => console.log('Connected to SocketIO'));
+        socket.on('message', (data) => console.log(data));
+
+        // Voice input functionality (simplified, works in Chrome/Safari)
+        const voiceButton = document.getElementById('voiceButton');
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            voiceButton.addEventListener('click', () => {
+                const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.onresult = (event) => {
+                    document.getElementById('searchInput').value = event.results[0][0].transcript;
+                };
+                recognition.onerror = () => {
+                    document.getElementById('errorAlert').textContent = 'Voice recognition failed. Please try again.';
+                    document.getElementById('errorAlert').style.display = 'block';
+                };
+                recognition.start();
+            });
+        } else {
+            document.getElementById('errorAlert').textContent = 'Voice recognition is not supported in this browser.';
+            document.getElementById('errorAlert').style.display = 'block';
+        }
+
+        // Simulated dashboard content fetch (replace with real API call)
+        fetch('/api/patients/analytics/123', { // Mock userId
+            headers: { 'Authorization': `Bearer fakeToken` }
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                const dashboardContent = document.getElementById('dashboardContent');
+                dashboardContent.innerHTML = `
+                    <p>Records: ${data.data.records || 'No records'}</p>
+                    <p>Appointments: ${data.data.appointments || 'No appointments'}</p>
+                `;
+                document.getElementById('successAlert').textContent = 'Dashboard data loaded successfully!';
+                document.getElementById('successAlert').style.display = 'block';
+                setTimeout(() => document.getElementById('successAlert').style.display = 'none', 5000);
+            })
+            .catch(error => {
+                console.error('Dashboard fetch error:', error);
+                document.getElementById('errorAlert').textContent = `Failed to load dashboard data: ${error.message || 'Unknown error'}`;
+                document.getElementById('errorAlert').style.display = 'block';
+            });
+
+        // Simulate FullCalendar placeholder (requires additional setup for full functionality)
+        document.getElementById('calendar').innerHTML = '<p>Calendar placeholder (FullCalendar not loaded in this demo)</p>';
+    });
+
+    // Mock Socket.IO data if no server is available
+    setTimeout(() => {
+        socket.emit('message', { message: 'Dashboard updated!' });
+    }, 2000);
+</script>
+</html>

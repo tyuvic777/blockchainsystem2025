@@ -1,0 +1,51 @@
+{
+    "network": "goerli",
+    "rpcEndpoint": "http://eth-node:8545",
+    "contractAddress": "0x1234567890abcdef1234567890abcdef12345678",
+    "privateKey": "${ETH_PRIVATE_KEY}",  // Use environment variable for security
+    "abi": [
+        {
+            "constant": false,
+            "inputs": [
+                {"name": "_to", "type": "address"},
+                {"name": "_value", "type": "uint256"}
+            ],
+            "name": "transfer",
+            "outputs": [],
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {"name": "_owner", "type": "address"}
+            ],
+            "name": "balanceOf",
+            "outputs": [{"name": "", "type": "uint256"}],
+            "type": "function"
+        }
+    ],
+    "federation": {
+        "fabricChannel": "MediNetChannel",
+        "fabricChaincode": "payment",
+        "fabricPeer": "peer0.org1.example.com:7051",
+        "syncInterval": 300,
+        "tokenMapping": {
+            "fabricToken": "HealthCoin",
+            "ethToken": "HealthToken"
+        }
+    },
+    "security": {
+        "tls": true,
+        "encryption": "AES-256-GCM",
+        "signatureAlgorithm": "ECDSA"
+    },
+    "monitoring": {
+        "prometheus": "http://localhost:9090",
+        "metrics": ["transaction_count", "latency", "token_transfers"]
+    },
+    "retry": {
+        "maxAttempts": 5,
+        "initialDelay": 2000,
+        "backoffFactor": 2
+    }
+}

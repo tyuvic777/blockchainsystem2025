@@ -1,0 +1,98 @@
+version: '3.8'
+services:
+  peer0.org1.example.com:
+    image: hyperledger/fabric-peer:2.5.0
+    container_name: peer0.org1.example.com
+    environment:
+      - CORE_PEER_ID=peer0.org1.example.com
+      - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/tls/ca.crt
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.example.com:7051
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_CHAINCODEADDRESS=peer0.org1.example.com:7052
+    volumes:
+      - ./crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com:/etc/hyperledger
+    ports:
+      - "7051:7051"
+      - "7053:7053"
+    networks:
+      - medinet
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "1.0"
+
+  orderer.example.com:
+    image: hyperledger/fabric-orderer:2.5.0
+    container_name: orderer.example.com
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=info
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/orderer
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/etc/hyperledger/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/etc/hyperledger/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=/etc/hyperledger/tls/ca.crt
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/config/genesis.block
+    volumes:
+      - ./crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com:/etc/hyperledger
+    ports:
+      - "7050:7050"
+    networks:
+      - medinet
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "0.5"
+
+  ipfs:
+    image: ipfs/kubo:latest
+    container_name: ipfs_node
+    ports:
+      - "5001:5001"  # API
+      - "8080:8080"  # Gateway
+    volumes:
+      - ipfs-data:/data/ipfs
+    networks:
+      - medinet
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "0.5"
+
+  eth-node:
+    image: ethereum/client-go:latest
+    container_name: eth_node
+    command: ["--goerli", "--rpc", "--rpcaddr=0.0.0.0", "--rpcport=8545", "--ws", "--wsaddr=0.0.0.0", "--wsport=8546", "--syncmode=light", "--http.api=eth,net,web3,personal"]
+    ports:
+      - "8545:8545"  # RPC
+      - "8546:8546"  # WebSocket
+      - "30303:30303"  # Peer discovery
+    volumes:
+      - eth-data:/root/.ethereum
+    networks:
+      - medinet
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "1.0"
+
+networks:
+  medinet:
+    driver: bridge
+
+volumes:
+  ipfs-data:
+  eth-data:

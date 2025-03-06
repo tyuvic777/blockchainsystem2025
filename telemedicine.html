@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="description" content="Access telemedicine on MediNet">
+    <title>MediNet - Telemedicine</title>
+    <!-- CSS for blue/white/green/gray theme, medical cross (✚) -->
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/fullcalendar.min.css">
+    <!-- JavaScript for real-time updates, AR, and chat -->
+    <script src="/static/aframe.min.js" defer></script>
+    <script src="/static/webgl-fallback.js" defer></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sanitize-html/2.7.0/sanitize-html.min.js" defer></script>
+</head>
+<body>
+    <!-- Medical cross (✚) symbol as fixed navigation marker -->
+    <div id="mediNet-symbol">MediNet</div>
+    <nav class="navbar navbar-dark bg-dark" role="navigation" aria-label="Main navigation">
+        <a class="navbar-brand" href="/">MediNet</a>
+    </nav>
+    <main class="container mt-4" role="main" aria-label="Telemedicine Main Content">
+        <h2 class="text-center text-primary">Telemedicine</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="row">
+                    <!-- AR Scene for Telemedicine -->
+                    <div class="col-md-6 mb-3">
+                        <div id="arScene" style="height: 400px; border: 1px solid #007bff; border-radius: 8px; background-color: #ffffff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+                            <a-scene embedded>
+                                <a-box position="0 1.6 -2" rotation="0 45 0" color="#007bff" scale="1 1 1"></a-box>
+                                <a-cylinder position="0 0.75 -3" radius="0.5" height="1.5" color="#28a745"></a-cylinder>
+                                <a-plane position="0 0 -4" rotation="-90 0 0" width="4" height="4" color="#ffffff" opacity="0.5"></a-plane>
+                            </a-scene>
+                            <p id="webglFallback" class="text-muted text-center" style="display: none;">AR not supported. Please use a compatible browser.</p>
+                        </div>
+                    </div>
+                    <!-- Chat Interface -->
+                    <div class="col-md-6">
+                        <section id="chatContent" class="card p-3 shadow" role="region" aria-live="polite" aria-label="Telemedicine Chat">
+                            <div id="chatMessages"></div>
+                            <form id="chatForm" class="mt-3">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="chatInput" placeholder="Type your message..." aria-label="Chat Input">
+                                    <div class="input-group-append">
+                                        <button type="submit" class="btn btn-primary" aria-label="Send Message">Send</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Role-specific, user-friendly alerts -->
+        {% if error and error != None and error|length > 0 %}
+            <div class="alert alert-danger mt-3 text-center" role="alert" aria-live="polite">{{ error }}</div>
+        {% elif success_message and success_message != None and success_message|length > 0 %}
+            <div class="alert alert-success mt-3 text-center" role="alert" aria-live="polite">{{ success_message }}</div>
+        {% endif %}
+    </main>
+    <script type="module">
+        /**
+         * Initialize the telemedicine page with role-specific messages, real-time updates, and AR.
+         * @param {string} token - JWT token for authentication
+         * @param {number} userId - User ID
+         * @param {string} role - User role (admin, doctor, patient)
+         * @param {string} socketUrl - SocketIO URL
+         */
+        import { initializeTelemedicinePage } from '/static/telemedicine.js';
+        const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('user_id');
+        const role = localStorage.getItem('role');
+
+        if (!token || !userId) {
+            window.location.href = '/login';
+        } else {
+            initializeTelemedicinePage(token, userId, role, 'http://localhost:5005');
+        }
+    </script>
+    <!-- Ensure accessibility for reduced motion -->
+    <style>
+        @media (prefers-reduced-motion: reduce) {
+            *, .card:hover {
+                transition: none;
+                transform: none;
+            }
+        }
+    </style>
+</body>
+</html>

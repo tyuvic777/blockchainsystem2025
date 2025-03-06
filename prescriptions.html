@@ -1,0 +1,114 @@
+<!-- File: prescriptions.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="description" content="Manage your prescriptions on MediNet">
+    <title>MediNet - Prescriptions</title>
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/fullcalendar.min.css">
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sanitize-html/2.7.0/sanitize-html.min.js" defer></script>
+    <style>
+        .verified-badge { color: green; font-weight: bold; }
+        .role-admin { background-color: #f8f9fa; }
+        .role-doctor { background-color: #e9f7ef; }
+        .role-patient { background-color: #e3f2fd; }
+        @media (prefers-reduced-motion: reduce) {
+            *, .card:hover { transition: none; transform: none; }
+        }
+    </style>
+</head>
+<body>
+    <div id="mediNet-symbol">MediNet</div>
+    <nav class="navbar navbar-dark bg-dark" role="navigation" aria-label="Main navigation">
+        <a class="navbar-brand" href="/">MediNet</a>
+    </nav>
+    <main class="container mt-4" role="main" aria-label="Prescriptions Main Content">
+        <h2 class="text-center text-primary">Prescriptions</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-8" id="roleContainer">
+                <section id="prescriptionsContent" role="region" aria-live="polite" aria-label="Prescriptions Information">
+                    <div class="alert alert-info" id="complianceAlert" role="alert" aria-live="polite">
+                        <input type="checkbox" id="gdprConsent" aria-label="GDPR Consent"> I consent to data processing (GDPR)
+                    </div>
+                    <form id="prescriptionForm" class="mt-3" role="form" aria-label="Prescription Form">
+                        <div class="form-group">
+                            <label for="prescription" class="text-muted">Prescription Details</label>
+                            <textarea id="prescription" class="form-control" rows="3" required aria-required="true"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-2">Save Prescription</button>
+                    </form>
+                    <div id="zkpStatus" class="mt-2"></div>
+                    <div id="auditTrail" class="mt-2"></div>
+                </section>
+            </div>
+        </div>
+        <div id="alerts" class="mt-3"></div>
+    </main>
+    <script type="module">
+        import { ec as EC } from 'https://cdn.jsdelivr.net/npm/elliptic@6.5.4/dist/elliptic.min.js';
+        const socket = io('http://localhost:5005');
+        const ec = new EC('secp256r1');
+
+        const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('user_id');
+        const role = localStorage.getItem('role');
+        if (!token || !userId) window.location.href = '/login';
+
+        // Role-specific UI customization
+        document.getElementById('roleContainer').classList.add(`role-${role}`);
+
+        // ZKP Generation
+        function generateZKP(userId) {
+            const keyPair = ec.genKeyPair();
+            const k = ec.genKeyPair().getPrivate();
+            const R = ec.g.mul(k);
+            const hash = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(userId + R.getX().toString(16))));
+            const c = BigInt('0x' + Buffer.from(hash).toString('hex').slice(0, 64)) % ec.curve.n;
+            const s = k.add(keyPair.getPrivate().mul(c)).mod(ec.curve.n);
+            return { R_x: R.getX().toString(10), s: s.toString(10), public_key: keyPair.getPublic().getX().toString(10) };
+        }
+
+        // Form Submission with ZKP and Sanitization
+        document.getElementById('prescriptionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!document.getElementById('gdprConsent').checked) {
+                displayAlert('danger', 'Please provide GDPR consent.');
+                return;
+            }
+            const prescription = sanitizeHTML(document.getElementById('prescription').value);
+            const zkpProof = generateZKP(userId);
+            const data = { prescription, zkp_proof: zkpProof };
+            try {
+                const response = await fetch('/api/patients/prescriptions', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    displayAlert('success', `${role === 'doctor' ? 'Great job, Doctor!' : 'Thank you, ' + localStorage.getItem('name') || role}! Prescription saved.`);
+                    document.getElementById('zkpStatus').innerHTML = '<span class="verified-badge">ZKP Verified ✔</span>';
+                    document.getElementById('auditTrail').innerHTML = `Blockchain Hash: ${result.hash}`;
+                } else throw new Error(result.error);
+            } catch (error) {
+                displayAlert('danger', `Sorry, ${role === 'doctor' ? 'Doctor' : localStorage.getItem('name') || role}, we couldn’t save your prescription.`);
+            }
+        });
+
+        // Real-Time Updates
+        socket.on('prescription_update', (data) => {
+            displayAlert('info', `Prescription updated: ${sanitizeHTML(data.message)}`);
+        });
+
+        // Alert Display
+        function displayAlert(type, message) {
+            document.getElementById('alerts').innerHTML = `<div class="alert alert-${type} mt-3 text-center" role="alert" aria-live="polite">${sanitizeHTML(message)}</div>`;
+        }
+    </script>
+</body>
+</html>

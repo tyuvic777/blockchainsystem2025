@@ -1,0 +1,115 @@
+/* Custom overrides for Bootstrap to match blue/white/green/gray theme, medical cross (✚) */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #ffffff;
+    color: #6c757d;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    transition: all 0.3s ease;
+}
+
+#mediNet-symbol {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    font-size: 1.5rem;
+    color: #007bff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+#mediNet-symbol::before {
+    content: "✚";
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+.navbar {
+    background-color: #007bff !important;
+    padding: 0.5rem 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    color: #ffffff !important;
+    font-size: 1.25rem;
+}
+
+.navbar-brand:hover {
+    color: #cce5ff !important;
+    text-decoration: none;
+}
+
+h2 {
+    color: #007bff;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.card {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.card-body {
+    padding: 1rem;
+}
+
+.card-title {
+    color: #007bff;
+    font-size: 1.25rem;
+}
+
+.alert {
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.alert-success {
+    background-color: #28a745;
+    color: #ffffff;
+}
+
+.alert-danger {
+    background-color: #dc3545;
+    color: #ffffff;
+}
+
+.btn-primary {
+    background-color: #007bff !important;
+    color: #ffffff !important;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3 !important;
+    transform: scale(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, .card:hover, .btn-primary:hover {
+        transition: none;
+        transform: none;
+    }
+}
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="/static/custom-bootstrap.css">

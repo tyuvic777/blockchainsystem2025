@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="description" content="Login to MediNet for Healthcare Access">
+    <title>MediNet - Login</title>
+    <!-- CSS for blue/white/green/gray theme, medical cross (✚) -->
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/fullcalendar.min.css">
+    <!-- JavaScript for login handling -->
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sanitize-html/2.7.0/sanitize-html.min.js" defer></script>
+</head>
+<body>
+    <!-- Medical cross (✚) symbol as fixed navigation marker -->
+    <div id="mediNet-symbol">MediNet</div>
+    <nav class="navbar navbar-dark bg-dark" role="navigation" aria-label="Main navigation">
+        <a class="navbar-brand" href="/">MediNet</a>
+    </nav>
+    <main class="container mt-4" role="main" aria-label="Login Form">
+        <h2 class="text-center text-primary">Login</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <form id="loginForm" method="POST" class="card p-4 shadow" role="form" aria-label="Login Form">
+                    <div class="form-group">
+                        <label for="email" class="text-muted">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required aria-required="true" aria-label="Email Address">
+                    </div>
+                    <div class="form-group">
+                        <label for="password" class="text-muted">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required aria-required="true" aria-label="Password">
+                    </div>
+                    <div class="form-group">
+                        <label for="role" class="text-muted">Role</label>
+                        <select class="form-control" id="role" name="role" required aria-required="true" aria-label="User Role">
+                            <option value="admin">Admin</option>
+                            <option value="doctor">Doctor</option>
+                            <option value="patient">Patient</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">Login</button>
+                    <a href="/register" class="btn btn-link mt-2 text-muted">Register</a>
+                </form>
+            </div>
+        </div>
+        <!-- Role-specific, user-friendly alerts -->
+        {% if error and error != None and error|length > 0 %}
+            <div class="alert alert-danger mt-3 text-center" role="alert" aria-live="polite">{{ error }}</div>
+        {% endif %}
+    </main>
+    <script type="module">
+        /**
+         * Initialize the login page with role-specific message handling.
+         * @param {string} socketUrl - SocketIO URL
+         */
+        import { initializeLoginPage } from '/static/login.js';
+        initializeLoginPage('http://localhost:5005');
+    </script>
+    <!-- Ensure accessibility for reduced motion -->
+    <style>
+        @media (prefers-reduced-motion: reduce) {
+            *, .card:hover {
+                transition: none;
+                transform: none;
+            }
+        }
+    </style>
+</body>
+</html>
